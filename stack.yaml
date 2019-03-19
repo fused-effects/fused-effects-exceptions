@@ -1,0 +1,8 @@
+resolver: lts-13.13
+
+packages:
+- .
+- location:
+    git: https://github.com/fused-effects/fused-effects
+    commit: 13b3c5f5871b6a637f5de7128865bcd305ba744e
+  extra-dep: true
