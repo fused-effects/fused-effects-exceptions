@@ -14,6 +14,7 @@ module Control.Effect.Catch
   , catch
   , catchSync
   , runCatch
+  , withCatch
   , CatchC (..)
   ) where
 
