@@ -27,12 +27,12 @@ import           Control.Monad.IO.Class
 import           Control.Monad.IO.Unlift
 
 data Catch m k
-  = forall output e . Exc.Exception e => CatchIO (m output) (e -> m output) (output -> k)
+  = forall output e . Exc.Exception e => CatchIO (m output) (e -> m output) (output -> m k)
 
-deriving instance Functor (Catch m)
+deriving instance Functor m => Functor (Catch m)
 
 instance HFunctor Catch where
-  hmap f (CatchIO go cleanup k) = CatchIO (f go) (f . cleanup) k
+  hmap f (CatchIO go cleanup k) = CatchIO (f go) (f . cleanup) (f . k)
 
 instance Effect Catch where
   handle state handler (CatchIO go cleanup k)
