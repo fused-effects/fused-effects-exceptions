@@ -5,14 +5,13 @@ version:             0.2.0.0
 synopsis:            Handle exceptions thrown in IO with fused-effects.
 description:         Provides an effect that enables catching exceptions thrown from impure computations such as 'IO'.
 homepage:            https://github.com/patrickt/fused-effects-exceptions#readme
-license:             BSD3
+license:             BSD-3-Clause
 license-file:        LICENSE
 author:              Josh Vera
 maintainer:          patrickt@github.com
 copyright:           2019 Josh Vera and Patrick Thomson
 category:            Control
 build-type:          Simple
-cabal-version:       >=1.10
 extra-source-files:  README.md
 
 tested-with:         GHC == 8.6.4
