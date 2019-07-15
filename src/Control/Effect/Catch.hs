@@ -13,7 +13,6 @@ module Control.Effect.Catch
   ( Catch (..)
   , catch
   , catchSync
-  , runCatch
   , withCatch
   , CatchC (..)
   ) where
@@ -63,10 +62,10 @@ catchSync f g = f `catch` \e ->
       else liftIO (Exc.throw e)
 
 -- | Evaluate a 'Catch' effect.
-runCatch :: (forall x . m x -> IO x)
-         -> CatchC m a
-         -> m a
-runCatch handler = runReader (Handler handler) . runCatchC
+unliftCatch :: (forall x . m x -> IO x)
+            -> CatchC m a
+            -> m a
+unliftCatch handler = runReader (Handler handler) . runCatchC
 
 -- | Evaluate a 'Catch' effect, using 'MonadUnliftIO' to infer a correct
 -- unlifting function.
@@ -83,7 +82,7 @@ newtype CatchC m a = CatchC { runCatchC :: ReaderC (Handler m) m a }
 
 instance MonadUnliftIO m => MonadUnliftIO (CatchC m) where
   askUnliftIO = CatchC . ReaderC $ \(Handler h) ->
-    withUnliftIO $ \u -> pure (UnliftIO $ \r -> unliftIO u (runCatch h r))
+    withUnliftIO $ \u -> pure (UnliftIO $ \r -> unliftIO u (unliftCatch h r))
 
 instance (Carrier sig m, MonadIO m) => Carrier (Catch :+: sig) (CatchC m) where
   eff (L (CatchIO act cleanup k)) = do
