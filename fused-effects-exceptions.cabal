@@ -4,7 +4,7 @@ name:                fused-effects-exceptions
 version:             0.2.0.0
 synopsis:            Handle exceptions thrown in IO with fused-effects.
 description:         Provides an effect that enables catching exceptions thrown from impure computations such as 'IO'.
-homepage:            https://github.com/patrickt/fused-effects-exceptions#readme
+homepage:            https://github.com/fused-effects/fused-effects-exceptions#readme
 license:             BSD-3-Clause
 license-file:        LICENSE
 author:              Josh Vera
