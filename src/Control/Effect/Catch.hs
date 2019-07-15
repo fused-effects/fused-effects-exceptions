@@ -14,7 +14,6 @@ module Control.Effect.Catch
   , catch
   , catchSync
   , runCatch
-  , withCatch
   , CatchC (..)
   ) where
 
@@ -27,12 +26,12 @@ import           Control.Monad.IO.Class
 import           Control.Monad.IO.Unlift
 
 data Catch m k
-  = forall output e . Exc.Exception e => CatchIO (m output) (e -> m output) (output -> k)
+  = forall output e . Exc.Exception e => CatchIO (m output) (e -> m output) (output -> m k)
 
-deriving instance Functor (Catch m)
+deriving instance Functor m => Functor (Catch m)
 
 instance HFunctor Catch where
-  hmap f (CatchIO go cleanup k) = CatchIO (f go) (f . cleanup) k
+  hmap f (CatchIO go cleanup k) = CatchIO (f go) (f . cleanup) (f . k)
 
 instance Effect Catch where
   handle state handler (CatchIO go cleanup k)
@@ -63,15 +62,15 @@ catchSync f g = f `catch` \e ->
       else liftIO (Exc.throw e)
 
 -- | Evaluate a 'Catch' effect.
-runCatch :: (forall x . m x -> IO x)
-         -> CatchC m a
-         -> m a
-runCatch handler = runReader (Handler handler) . runCatchC
+unliftCatch :: (forall x . m x -> IO x)
+            -> CatchC m a
+            -> m a
+unliftCatch handler = runReader (Handler handler) . runCatchC
 
 -- | Evaluate a 'Catch' effect, using 'MonadUnliftIO' to infer a correct
 -- unlifting function.
-withCatch :: MonadUnliftIO m => CatchC m a -> m a
-withCatch c = withRunInIO (\f -> runHandler (Handler f) c)
+runCatch :: MonadUnliftIO m => CatchC m a -> m a
+runCatch c = withRunInIO (\f -> runHandler (Handler f) c)
 
 newtype Handler m = Handler (forall x . m x -> IO x)
 
@@ -83,7 +82,7 @@ newtype CatchC m a = CatchC { runCatchC :: ReaderC (Handler m) m a }
 
 instance MonadUnliftIO m => MonadUnliftIO (CatchC m) where
   askUnliftIO = CatchC . ReaderC $ \(Handler h) ->
-    withUnliftIO $ \u -> pure (UnliftIO $ \r -> unliftIO u (runCatch h r))
+    withUnliftIO $ \u -> pure (UnliftIO $ \r -> unliftIO u (unliftCatch h r))
 
 instance (Carrier sig m, MonadIO m) => Carrier (Catch :+: sig) (CatchC m) where
   eff (L (CatchIO act cleanup k)) = do
