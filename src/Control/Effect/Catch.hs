@@ -13,7 +13,7 @@ module Control.Effect.Catch
   ( Catch (..)
   , catch
   , catchSync
-  , withCatch
+  , runCatch
   , CatchC (..)
   ) where
 
@@ -69,8 +69,8 @@ unliftCatch handler = runReader (Handler handler) . runCatchC
 
 -- | Evaluate a 'Catch' effect, using 'MonadUnliftIO' to infer a correct
 -- unlifting function.
-withCatch :: MonadUnliftIO m => CatchC m a -> m a
-withCatch c = withRunInIO (\f -> runHandler (Handler f) c)
+runCatch :: MonadUnliftIO m => CatchC m a -> m a
+runCatch c = withRunInIO (\f -> runHandler (Handler f) c)
 
 newtype Handler m = Handler (forall x . m x -> IO x)
 
