@@ -1,5 +1,4 @@
-{-# LANGUAGE DeriveFunctor, ExistentialQuantification, FlexibleContexts, FlexibleInstances, GeneralizedNewtypeDeriving,
-             MultiParamTypeClasses, RankNTypes, StandaloneDeriving, TypeOperators, UndecidableInstances #-}
+{-# LANGUAGE DeriveFunctor, ExistentialQuantification, FlexibleContexts, GeneralizedNewtypeDeriving, StandaloneDeriving #-}
 
 -- | An effect that enables catching exceptions thrown from
 -- impure computations such as 'IO'.
@@ -10,14 +9,15 @@
 -- libraries that operate in 'IO'. If you are using 'catch' for resource
 -- management, consider using 'Control.Effect.Resource' instead.
 module Control.Effect.Catch
-  ( Catch (..)
-  , catch
-  , catchSync
-  , runCatch
-  , CatchC (..)
-  ) where
+( -- * Catch effect
+  Catch (..)
+, catch
+, catchSync
+  -- * Re-exports
+, Has
+) where
 
-import           Control.Effect.Carrier
+import           Control.Carrier
 import           Control.Effect.Reader
 import           Control.Effect.Sum
 import qualified Control.Exception as Exc
@@ -36,6 +36,7 @@ instance HFunctor Catch where
 instance Effect Catch where
   handle state handler (CatchIO go cleanup k)
     = CatchIO (handler (go <$ state)) (\se -> handler (cleanup se <$ state)) (handler . fmap k)
+
 
 -- | Like 'Control.Effect.Error.catchError', but delegating to
 -- 'Control.Exception.catch' under the hood, which allows catching
@@ -60,32 +61,3 @@ catchSync f g = f `catch` \e ->
       -- intentionally rethrowing an async exception synchronously,
       -- since we want to preserve async behavior
       else liftIO (Exc.throw e)
-
--- | Evaluate a 'Catch' effect.
-unliftCatch :: (forall x . m x -> IO x)
-            -> CatchC m a
-            -> m a
-unliftCatch handler = runReader (Handler handler) . runCatchC
-
--- | Evaluate a 'Catch' effect, using 'MonadUnliftIO' to infer a correct
--- unlifting function.
-runCatch :: MonadUnliftIO m => CatchC m a -> m a
-runCatch c = withRunInIO (\f -> runHandler (Handler f) c)
-
-newtype Handler m = Handler (forall x . m x -> IO x)
-
-runHandler :: Handler m -> CatchC m a -> IO a
-runHandler h@(Handler handler) = handler . runReader h . runCatchC
-
-newtype CatchC m a = CatchC { runCatchC :: ReaderC (Handler m) m a }
-  deriving (Functor, Applicative, Monad, MonadIO)
-
-instance MonadUnliftIO m => MonadUnliftIO (CatchC m) where
-  askUnliftIO = CatchC . ReaderC $ \(Handler h) ->
-    withUnliftIO $ \u -> pure (UnliftIO $ \r -> unliftIO u (unliftCatch h r))
-
-instance (Carrier sig m, MonadIO m) => Carrier (Catch :+: sig) (CatchC m) where
-  eff (L (CatchIO act cleanup k)) = do
-    handler <- CatchC ask
-    liftIO (Exc.catch (runHandler handler act) (runHandler handler . cleanup)) >>= k
-  eff (R other) = CatchC (eff (R (handleCoercible other)))
