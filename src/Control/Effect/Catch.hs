@@ -13,6 +13,11 @@ module Control.Effect.Catch
   ( Catch (..)
   , catch
   , catchSync
+<<<<<<< HEAD
+=======
+  , runCatch
+  , CatchC (..)
+>>>>>>> origin/master
   ) where
 
 import           Control.Carrier
