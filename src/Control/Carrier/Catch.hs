@@ -23,8 +23,9 @@ import           Control.Monad.IO.Class
 import           Control.Monad.IO.Unlift
 import           Control.Monad.Trans.Class
 
--- | Evaluate a 'Catch' effect, using 'MonadUnliftIO' to infer a correct
--- unlifting function.
+-- | Evaluate a 'Catch' effect, using 'MonadUnliftIO' to infer a correct unlifting function.
+--
+-- | @since 1.0.0.0
 runCatch :: MonadUnliftIO m => CatchC m a -> m a
 runCatch = runCatchC
 
