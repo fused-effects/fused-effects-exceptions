@@ -26,7 +26,7 @@ import           Control.Monad.Trans.Class
 -- | Executes a 'Resource' effect. Because this runs using 'MonadUnliftIO',
 -- invocations of 'runResource' must happen at the "bottom" of a stack of
 -- effect invocations, i.e. before the use of any monads that lack such
--- instances, such as 'Control.Carrier.State.IORef.StateC':
+-- instances, such as 'StateC':
 --
 -- @
 --   runM
