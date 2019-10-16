@@ -13,11 +13,9 @@ module Control.Effect.Catch
   ( Catch (..)
   , catch
   , catchSync
-  , runCatch
-  , CatchC (..)
   ) where
 
-import           Control.Effect.Carrier
+import           Control.Carrier
 import           Control.Effect.Reader
 import           Control.Effect.Sum
 import qualified Control.Exception as Exc
@@ -25,6 +23,7 @@ import           Control.Exception.Safe (isSyncException)
 import           Control.Monad.IO.Class
 import           Control.Monad.IO.Unlift
 
+-- | @since 0.1.0.0
 data Catch m k
   = forall output e . Exc.Exception e => CatchIO (m output) (e -> m output) (output -> m k)
 
@@ -37,19 +36,20 @@ instance Effect Catch where
   handle state handler (CatchIO go cleanup k)
     = CatchIO (handler (go <$ state)) (\se -> handler (cleanup se <$ state)) (handler . fmap k)
 
--- | Like 'Control.Effect.Error.catchError', but delegating to
--- 'Control.Exception.catch' under the hood, which allows catching
--- errors that might occur when lifting 'IO' computations.
--- Unhandled errors are rethrown. Use 'Exc.SomeException' if you want
--- to catch all errors.
+-- | Like 'Control.Effect.Error.catchError', but delegating to 'Control.Exception.catch' under the hood, which allows catching errors that might occur when lifting 'IO' computations.
+--
+-- Unhandled errors are rethrown. Use 'Exc.SomeException' if you want to catch all errors.
+--
+-- | @since 0.1.0.0
 catch :: (Member Catch sig, Carrier sig m, Exc.Exception e)
       => m a
       -> (e -> m a)
       -> m a
 catch go cleanup = send (CatchIO go cleanup pure)
 
--- | Like 'catch', but the handler only engages on synchronous exceptions.
--- Async exceptions are rethrown.
+-- | Like 'catch', but the handler only engages on synchronous exceptions. Async exceptions are rethrown.
+--
+-- | @since 0.1.0.0
 catchSync :: (Member Catch sig, Carrier sig m, Exc.Exception e, MonadIO m)
           => m a
           -> (e -> m a)
@@ -60,32 +60,3 @@ catchSync f g = f `catch` \e ->
       -- intentionally rethrowing an async exception synchronously,
       -- since we want to preserve async behavior
       else liftIO (Exc.throw e)
-
--- | Evaluate a 'Catch' effect.
-unliftCatch :: (forall x . m x -> IO x)
-            -> CatchC m a
-            -> m a
-unliftCatch handler = runReader (Handler handler) . runCatchC
-
--- | Evaluate a 'Catch' effect, using 'MonadUnliftIO' to infer a correct
--- unlifting function.
-runCatch :: MonadUnliftIO m => CatchC m a -> m a
-runCatch c = withRunInIO (\f -> runHandler (Handler f) c)
-
-newtype Handler m = Handler (forall x . m x -> IO x)
-
-runHandler :: Handler m -> CatchC m a -> IO a
-runHandler h@(Handler handler) = handler . runReader h . runCatchC
-
-newtype CatchC m a = CatchC { runCatchC :: ReaderC (Handler m) m a }
-  deriving (Functor, Applicative, Monad, MonadIO)
-
-instance MonadUnliftIO m => MonadUnliftIO (CatchC m) where
-  askUnliftIO = CatchC . ReaderC $ \(Handler h) ->
-    withUnliftIO $ \u -> pure (UnliftIO $ \r -> unliftIO u (unliftCatch h r))
-
-instance (Carrier sig m, MonadIO m) => Carrier (Catch :+: sig) (CatchC m) where
-  eff (L (CatchIO act cleanup k)) = do
-    handler <- CatchC ask
-    liftIO (Exc.catch (runHandler handler act) (runHandler handler . cleanup)) >>= k
-  eff (R other) = CatchC (eff (R (handleCoercible other)))
