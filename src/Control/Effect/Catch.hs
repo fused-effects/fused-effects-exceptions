@@ -12,7 +12,7 @@
 module Control.Effect.Catch
   ( Catch (..)
   , catch
-  , catchSync
+  , catchAsync
   ) where
 
 import           Control.Carrier
@@ -40,21 +40,23 @@ instance Effect Catch where
 --
 -- Unhandled errors are rethrown. Use 'Exc.SomeException' if you want to catch all errors.
 --
--- | @since 0.1.0.0
-catch :: (Member Catch sig, Carrier sig m, Exc.Exception e)
+-- | @since 1.0.0.0
+catchAsync :: (Member Catch sig, Carrier sig m, Exc.Exception e)
       => m a
       -> (e -> m a)
       -> m a
-catch go cleanup = send (CatchIO go cleanup pure)
+catchAsync go cleanup = send (CatchIO go cleanup pure)
 
--- | Like 'catch', but the handler only engages on synchronous exceptions. Async exceptions are rethrown.
+-- | Like 'Control.Effect.Error.catchError', but delegating to 'Control.Exception.catch' under the hood, which allows catching errors that might occur when lifting 'IO' computations. Asynchronous exceptions are rethrown by this function. Use 'catchAsync' to catch them as well.
+--
+-- Unhandled errors are rethrown. Use 'Exc.SomeException' if you want to catch all errors.
 --
 -- | @since 0.1.0.0
-catchSync :: (Member Catch sig, Carrier sig m, Exc.Exception e, MonadIO m)
+catch :: (Member Catch sig, Carrier sig m, Exc.Exception e, MonadIO m)
           => m a
           -> (e -> m a)
           -> m a
-catchSync f g = f `catch` \e ->
+catch f g = f `catch` \e ->
   if isSyncException e
       then g e
       -- intentionally rethrowing an async exception synchronously,

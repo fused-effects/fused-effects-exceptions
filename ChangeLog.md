@@ -4,6 +4,7 @@
 * Add `Control.Effect.Resource` and `Control.Carrier.Resource`, as ported from fused-effects 0.5.
 * Add `Control.Carrier.State.IORef` to help people migrating from other state carriers.
 * Move `Control.Effect.Catch.CatchC` to `Control.Carrier.Catch` and simplify its internals.
+* Rename `catch` to `catchAsync` and `catchSync` to `catch`.
 
 # 0.2.0.0
 
