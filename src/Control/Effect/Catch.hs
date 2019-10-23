@@ -40,7 +40,7 @@ instance Effect Catch where
 --
 -- Unhandled errors are rethrown. Use 'Exc.SomeException' if you want to catch all errors.
 --
--- | @since 0.1.0.0
+-- | @since 1.0.0.0
 catchAsync :: (Member Catch sig, Carrier sig m, Exc.Exception e)
       => m a
       -> (e -> m a)
