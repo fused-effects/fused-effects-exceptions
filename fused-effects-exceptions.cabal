@@ -33,6 +33,17 @@ library
     , fused-effects    >= 1
     , transformers     >= 0.4 && < 0.6
 
+test-suite test
+  type: exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is: Main.hs
+  build-depends:
+      base
+    , fused-effects
+    , tasty         ^>= 1.2
+    , tasty-hunit   ^>= 0.10
+    , transformers
+
 source-repository head
   type:     git
   location: https://github.com/fused-effects/fused-effects-exceptions
