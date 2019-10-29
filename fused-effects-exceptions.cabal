@@ -30,7 +30,7 @@ library
     Control.Effect.Exception
   build-depends:
       base             >= 4.7 && < 5
-    , fused-effects    >= 1.0.0.0
+    , fused-effects    >= 1
     , transformers     >= 0.4 && < 0.6
 
 source-repository head
