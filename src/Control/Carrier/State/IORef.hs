@@ -5,27 +5,23 @@
 Note that the parameter order in 'runState', 'evalState', and 'execState' is reversed compared the equivalent functions provided by @transformers@. This is an intentional decision made to enable the composition of effect handlers with '.' without invoking 'flip'.
 -}
 module Control.Carrier.State.IORef
-( -- * State effect
-  module Control.Effect.State
-  -- * Strict state carrier
-, runState
-, evalState
-, execState
-, StateC(..)
-  -- * Re-exports
-, Carrier
-, run
-) where
+  ( -- * Strict state carrier
+    runState
+  , evalState
+  , execState
+  , StateC(..)
+  -- * State effect
+  , module Control.Effect.State
+  ) where
 
 import           Control.Applicative       (Alternative (..))
-import           Control.Carrier
+import           Control.Algebra
 import           Control.Carrier.Reader
 import           Control.Effect.State
 import           Control.Monad             (MonadPlus (..))
 import qualified Control.Monad.Fail        as Fail
 import           Control.Monad.Fix
 import           Control.Monad.IO.Class
-import           Control.Monad.IO.Unlift
 import           Control.Monad.Trans.Class
 import           Data.IORef
 
@@ -66,17 +62,11 @@ execState s = fmap fst . runState s
 newtype StateC s m a = StateC { runStateC :: ReaderC (IORef s) m a }
   deriving (Alternative, Applicative, Functor, Monad, Fail.MonadFail, MonadFix, MonadIO, MonadPlus)
 
-instance MonadUnliftIO m => MonadUnliftIO (StateC s m) where
-  askUnliftIO = StateC . ReaderC $ \r -> withUnliftIO $ \u -> pure (UnliftIO (\(StateC (ReaderC x)) -> unliftIO u (x r)))
-  {-# INLINE askUnliftIO #-}
-  withRunInIO inner = StateC . ReaderC $ \r -> withRunInIO $ \go -> inner (go . runReader r . runStateC)
-  {-# INLINE withRunInIO #-}
-
-instance (MonadIO m, Carrier sig m, Effect sig) => Carrier (State s :+: sig) (StateC s m) where
-  eff (L act) = do
+instance (MonadIO m, Algebra sig m, Effect sig) => Algebra (State s :+: sig) (StateC s m) where
+  alg (L act) = do
     ref <- StateC ask
     case act of
       Put s k -> liftIO (writeIORef ref s) *> k
       Get k   -> liftIO (readIORef ref) >>= k
-  eff (R other) = StateC (eff (R (handleCoercible other)))
-  {-# INLINE eff #-}
+  alg (R other) = StateC (handleCoercible other)
+  {-# INLINE alg #-}
