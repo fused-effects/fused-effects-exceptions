@@ -39,6 +39,7 @@ test-suite test
   main-is: Main.hs
   build-depends:
       base
+    , fused-effects-exceptions
     , fused-effects
     , tasty         ^>= 1.2
     , tasty-hunit   ^>= 0.10
