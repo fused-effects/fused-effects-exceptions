@@ -5,14 +5,14 @@
 Note that the parameter order in 'runState', 'evalState', and 'execState' is reversed compared the equivalent functions provided by @transformers@. This is an intentional decision made to enable the composition of effect handlers with '.' without invoking 'flip'.
 -}
 module Control.Carrier.State.IORef
-  ( -- * Strict state carrier
-    runState
-  , evalState
-  , execState
-  , StateC(..)
-  -- * State effect
-  , module Control.Effect.State
-  ) where
+( -- * Strict state carrier
+  runState
+, evalState
+, execState
+, StateC(..)
+-- * State effect
+, module Control.Effect.State
+) where
 
 import           Control.Applicative       (Alternative (..))
 import           Control.Algebra
