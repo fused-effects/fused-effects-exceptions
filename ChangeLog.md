@@ -1,10 +1,9 @@
 # 1.0.0.0
 
 * Port to fused-effects 1.0.
-* Add `Control.Effect.Resource` and `Control.Carrier.Resource`, as ported from fused-effects 0.5.
-* Add `Control.Carrier.State.IORef` to help people migrating from other state carriers.
-* Move `Control.Effect.Catch.CatchC` to `Control.Carrier.Catch` and simplify its internals.
-* Rename `catch` to `catchAsync` and `catchSync` to `catch`.
+* Add `Control.Effect.Exception`, which wraps the entirety of `base`'s `Control.Exception`.
+* Add `Control.Carrier.State.IORef`, a state carrier that does not drop writes.
+* Remove `Catch` effect in favor of `Control.Effect.Exception`.
 
 # 0.2.0.0
 
