@@ -9,8 +9,9 @@ This package provides `Control.Effect.Exception`, a module that wraps the [`Cont
 Please be aware that injudicious use of these functions may provoke surprising interactions with carriers that thread a monadic state as a parameter, à la the `Control.Carrier.State` types provided by `fused-effects`. For example, a function like `finally`, which does not thread any state from its body to its handler block, may discard state writes in cleanup handlers:
 
 ```haskell
-λ runM (runResource (runState 'a' (modify (succ @Char) `finally` modify (succ . succ @Char))))
-('b', ())
+λ run (runState 'a' ((throwIO (userError "urk") `finally` put @Char 'z')
+    `catch` (\(_ :: IOException) -> pure ())))
+('a', ())
 ```
 
 If this behavior is a concern, a `Control.Carrier.State.IORef` carrier is provided, which fixes this issue given access to a `MonadIO` constraint. If it is not a concern (such as if the cleanup block is only run for its effects in `IO`), then the `StateC` carriers from `fused-effects` will suffice. For more information about the issues associated with this approach, consult Alexis King's excellent [Demystifying `MonadBaseControl`](https://lexi-lambda.github.io/blog/2019/09/07/demystifying-monadbasecontrol/).
