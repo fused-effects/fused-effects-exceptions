@@ -9,7 +9,7 @@ This package provides `Control.Effect.Exception`, a module that wraps the [`Cont
 Please be aware that injudicious use of these functions may provoke surprising interactions with carriers that thread a monadic state as a parameter, à la the `Control.Carrier.State` types provided by `fused-effects`. For example, a function like `finally`, which does not thread any state from its body to its handler block, may discard state writes in cleanup handlers:
 
 ```haskell
-λ runM (runState 'a' ((throwIO (userError "urk") `finally` put @Char 'z')
+λ run (runState 'a' ((throwIO (userError "urk") `finally` put @Char 'z')
     `catch` (\(_ :: IOException) -> pure ())))
 ('a', ())
 ```
