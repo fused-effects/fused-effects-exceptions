@@ -68,5 +68,5 @@ instance (MonadIO m, Algebra sig m, Effect sig) => Algebra (State s :+: sig) (St
     case act of
       Put s k -> liftIO (writeIORef ref s) *> k
       Get k   -> liftIO (readIORef ref) >>= k
-  alg (R other) = StateC (handleCoercible other)
+  alg (R other) = StateC (alg (R (handleCoercible other)))
   {-# INLINE alg #-}
