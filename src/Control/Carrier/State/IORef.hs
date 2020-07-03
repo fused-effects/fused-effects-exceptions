@@ -1,4 +1,12 @@
-{-# LANGUAGE FlexibleInstances, GeneralizedNewtypeDeriving, MultiParamTypeClasses, RankNTypes, TypeOperators, UndecidableInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 {- | A carrier for the 'State' effect. It uses an 'IORef' internally to handle its state, and thus is safe to use with "Control.Carrier.Resource". Underlying 'IORef' operations are performed with 'readIORef' and 'writeIORef'.
 
@@ -14,12 +22,12 @@ module Control.Carrier.State.IORef
 , module Control.Effect.State
 ) where
 
-import           Control.Applicative       (Alternative (..))
 import           Control.Algebra
+import           Control.Applicative (Alternative(..))
 import           Control.Carrier.Reader
 import           Control.Effect.State
-import           Control.Monad             (MonadPlus (..))
-import qualified Control.Monad.Fail        as Fail
+import           Control.Monad (MonadPlus(..))
+import qualified Control.Monad.Fail as Fail
 import           Control.Monad.Fix
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
@@ -62,11 +70,12 @@ execState s = fmap fst . runState s
 newtype StateC s m a = StateC { runStateC :: ReaderC (IORef s) m a }
   deriving (Alternative, Applicative, Functor, Monad, Fail.MonadFail, MonadFix, MonadIO, MonadPlus)
 
-instance (MonadIO m, Algebra sig m, Effect sig) => Algebra (State s :+: sig) (StateC s m) where
-  alg (L act) = do
-    ref <- StateC ask
-    case act of
-      Put s k -> liftIO (writeIORef ref s) *> k
-      Get k   -> liftIO (readIORef ref) >>= k
-  alg (R other) = StateC (alg (R (handleCoercible other)))
+instance (MonadIO m, Algebra sig m) => Algebra (State s :+: sig) (StateC s m) where
+  alg hdl sig ctx = case sig of
+    L act -> do
+      ref <- StateC (ask @(IORef s))
+      (<$ ctx) <$> case act of
+        Put s -> liftIO (writeIORef ref s)
+        Get   -> liftIO (readIORef ref)
+    R other -> StateC (alg (runStateC . hdl) (R other) ctx)
   {-# INLINE alg #-}
