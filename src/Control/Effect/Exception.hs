@@ -92,13 +92,13 @@ throwTo thread = sendM . Exc.throwTo thread
 --
 -- @since 1.0.0.0
 catch :: (Exc.Exception e, Has (Lift IO) sig m) => m a -> (e -> m a) -> m a
-catch m h = liftWith $ \ ctx run -> run (m <$ ctx) `Exc.catch` (run . (<$ ctx) . h)
+catch m h = liftWith $ \ run ctx -> run (m <$ ctx) `Exc.catch` (run . (<$ ctx) . h)
 
 -- | See @"Control.Exception".'Exc.catches'@.
 --
 -- @since 1.0.0.0
 catches :: Has (Lift IO) sig m => m a -> [Handler m a] -> m a
-catches m hs = liftWith $ \ ctx run ->
+catches m hs = liftWith $ \ run ctx ->
   Exc.catches (run (m <$ ctx)) (map (\ (Handler h) -> Exc.Handler (run . (<$ ctx) . h)) hs)
 
 -- | See @"Control.Exception".'Exc.Handler'@.
@@ -118,7 +118,7 @@ catchJust
   -> m a
   -> (b -> m a)
   -> m a
-catchJust p m h = liftWith $ \ ctx run -> Exc.catchJust p (run (m <$ ctx)) (run . (<$ ctx) . h)
+catchJust p m h = liftWith $ \ run ctx -> Exc.catchJust p (run (m <$ ctx)) (run . (<$ ctx) . h)
 
 -- | See @"Control.Exception".'Exc.handle'@.
 --
@@ -159,8 +159,8 @@ evaluate = sendM . Exc.evaluate
 --
 -- @since 1.0.0.0
 mask :: Has (Lift IO) sig m => ((forall a . m a -> m a) -> m b) -> m b
-mask with = liftWith $ \ ctx run -> Exc.mask $ \ restore ->
-  run (with (\ m -> liftWith $ \ ctx' run' -> restore (run' (m <$ ctx'))) <$ ctx)
+mask with = liftWith $ \ run ctx -> Exc.mask $ \ restore ->
+  run (with (\ m -> liftWith $ \ run' ctx' -> restore (run' (m <$ ctx'))) <$ ctx)
 
 -- | See @"Control.Exception".'Exc.mask_'@.
 --
@@ -172,8 +172,8 @@ mask_ m = mask $ const m
 --
 -- @since 1.0.0.0
 uninterruptibleMask :: Has (Lift IO) sig m => ((forall a . m a -> m a) -> m b) -> m b
-uninterruptibleMask with = liftWith $ \ ctx run -> Exc.uninterruptibleMask $ \ restore ->
-  run (with (\ m -> liftWith $ \ ctx' run' -> restore (run' (m <$ ctx'))) <$ ctx)
+uninterruptibleMask with = liftWith $ \ run ctx -> Exc.uninterruptibleMask $ \ restore ->
+  run (with (\ m -> liftWith $ \ run' ctx' -> restore (run' (m <$ ctx'))) <$ ctx)
 
 -- | See @"Control.Exception".'Exc.uninterruptibleMask_'@.
 --
@@ -191,7 +191,7 @@ getMaskingState = sendM Exc.getMaskingState
 --
 -- @since 1.0.0.0
 interruptible :: Has (Lift IO) sig m => m a -> m a
-interruptible m = liftWith $ \ ctx run -> Exc.interruptible (run (m <$ ctx))
+interruptible m = liftWith $ \ run ctx -> Exc.interruptible (run (m <$ ctx))
 
 -- | See @"Control.Exception".'Exc.allowInterrupt'@.
 --
