@@ -1,0 +1,4 @@
+packages: .
+
+package fused-effects-exceptions
+  ghc-options: -Werror
