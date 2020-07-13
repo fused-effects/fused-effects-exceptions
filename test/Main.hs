@@ -37,4 +37,3 @@ tests = Tasty.testGroup "Control.Carrier.Exception"
 
 main :: IO ()
 main = Tasty.defaultMain tests
-
