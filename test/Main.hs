@@ -19,12 +19,12 @@ problematic =
 
 testStateDropsWrites :: Tasty.TestTree
 testStateDropsWrites = HUnit.testCase "State.Strict drops writes" $ do
-  result <- State.execState 'a' $ problematic
+  result <- State.execState 'a' problematic
   result HUnit.@?= 'a' -- writes are lost
 
 testIOStatePreservesWrites :: Tasty.TestTree
 testIOStatePreservesWrites = HUnit.testCase "State.IORef preserves writes" $ do
-  result <- IOState.execState 'a' $ problematic
+  result <- IOState.execState 'a' problematic
   result HUnit.@?= 'x'
 
 tests :: Tasty.TestTree
