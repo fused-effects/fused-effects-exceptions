@@ -1,7 +1,7 @@
 cabal-version:       2.4
 
 name:                fused-effects-exceptions
-version:             1.0.0.0
+version:             1.1.0.0
 synopsis:            Handle exceptions thrown in IO with fused-effects.
 description:         Provides Resource and Catch effects capable of reacting to and catching GHC's dynamic exceptions.
 homepage:            https://github.com/fused-effects/fused-effects-exceptions#readme
