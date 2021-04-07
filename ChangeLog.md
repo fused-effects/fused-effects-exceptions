@@ -1,7 +1,10 @@
+# 1.1.0.1
+
+* GHC 9 support.
+
 # 1.1.0.0
 
 * Port to fused-effects 1.1.
-
 
 # 1.0.0.0
 

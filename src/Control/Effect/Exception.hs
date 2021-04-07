@@ -166,7 +166,7 @@ mask with = liftWith $ \ run ctx -> Exc.mask $ \ restore ->
 --
 -- @since 1.0.0.0
 mask_ :: Has (Lift IO) sig m => m a -> m a
-mask_ m = mask $ const m
+mask_ m = mask (\_ -> m)
 
 -- | See @"Control.Exception".'Exc.uninterruptibleMask'@.
 --
@@ -179,7 +179,7 @@ uninterruptibleMask with = liftWith $ \ run ctx -> Exc.uninterruptibleMask $ \ r
 --
 -- @since 1.0.0.0
 uninterruptibleMask_ :: Has (Lift IO) sig m => m a -> m a
-uninterruptibleMask_ m = uninterruptibleMask $ const m
+uninterruptibleMask_ m = uninterruptibleMask (\_ -> m)
 
 -- | See @"Control.Exception".'Exc.getMaskingState'@.
 --
