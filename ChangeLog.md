@@ -1,3 +1,5 @@
+- Removed `Control.Carrier.State.IORef` in favor of the one now present in `fused-effects`. The minimum requirement for `fused-effects` has been raised so as to minimize breakage. The major version bump is to handle potential (but almost certainly nonexistent) breakage that could occur given injudicious use of `PackageImports`.
+
 # 1.1.0.1
 
 * GHC 9 support.

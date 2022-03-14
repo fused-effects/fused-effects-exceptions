@@ -30,6 +30,6 @@ discardsState = execState 'a' ((throwIO (userError "urk") `finally` put @Char 'z
     `catch` (\(_ :: IOException) -> pure ()))
 ```
 
-Though the `put @Char 'z'` statement is evaluated, its effect is ultimately discarded; the result of executing the above is `'a'`. If this behavior is a concern, a `Control.Carrier.State.IORef` carrier is provided, which fixes this issue given access to a `MonadIO` constraint. If it is not a concern (such as if the cleanup block is only run for its effects in `IO`), then the `StateC` carriers from `fused-effects` will suffice. For more information about the issues associated with this approach, consult Alexis King's excellent [Demystifying `MonadBaseControl`](https://lexi-lambda.github.io/blog/2019/09/07/demystifying-monadbasecontrol/).
+Though the `put @Char 'z'` statement is evaluated, its effect is ultimately discarded; the result of executing the above is `'a'`. If this behavior is a concern, use the `Control.Carrier.State.IORef` carrier from `fused-effects` itself.
 
 Prior versions of this package provided a `Catch` effect; this has been excised in favor of the more-general `Control.Effect.Exception`, which provides more functionality without requiring any additional carriers beyond a `Lift IO` effect.

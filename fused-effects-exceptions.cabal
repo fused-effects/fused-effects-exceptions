@@ -31,11 +31,10 @@ library
   import: common
   hs-source-dirs: src
   exposed-modules:
-    Control.Carrier.State.IORef
     Control.Effect.Exception
   build-depends:
       base             >= 4.7 && < 5
-    , fused-effects    >= 1.1
+    , fused-effects    >= 1.1.2
     , transformers     >= 0.4 && < 0.6
 
 test-suite test
