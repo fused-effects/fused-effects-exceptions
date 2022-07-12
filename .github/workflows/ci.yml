@@ -14,12 +14,11 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        ghc: ["8.2.2", "8.4.4", "8.6.5", "8.8.3", "8.10.1", "9.0.1"]
+        ghc: ["8.2.2", "8.4.4", "8.6.5", "8.8.3", "8.10.1", "9.0.1", "9.2.1"]
         cabal: ["latest"]
 
     steps:
     - uses: actions/checkout@v2
-      if: github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.ref == 'refs/heads/master'
 
     - uses: haskell/actions/setup@v1.1.8
       name: Setup Haskell
