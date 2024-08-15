@@ -36,7 +36,7 @@ library
   build-depends:
       base             >= 4.7 && < 5
     , fused-effects    >= 1.1.2
-    , transformers     >= 0.4 && < 0.6
+    , transformers     >= 0.4 && < 0.7
 
 test-suite test
   import: common
